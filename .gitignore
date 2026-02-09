@@ -1,0 +1,12 @@
+# Virtual environment
+venv/
+
+# Environment variables
+.env
+
+# Generated documentation (keep local only)
+docs/
+
+# Python cache
+__pycache__/
+*.pyc
