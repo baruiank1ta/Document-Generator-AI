@@ -25,41 +25,29 @@ load_dotenv()
 
 app = FastAPI(title="Documentation Generator Agent")
 
-# -----------------------------
 # Request Models
-# -----------------------------
-
 class CodeInput(BaseModel):
     code: Optional[str] = None
     github_url: Optional[str] = None
     version: str
 
 
-# -----------------------------
 # Health Check
-# -----------------------------
-
 @app.get("/")
 def health():
     return {"status": "running"}
 
 
-# -----------------------------
-# Generate Documentation
-# -----------------------------
 
+# Generate Documentation
 @app.post("/generate")
 def generate_docs(input: CodeInput):
     try:
-        # -------------------------------------------------
-        # 1. Validate input
-        # -------------------------------------------------
+        
         if not input.code and not input.github_url:
             return {"error": "Provide either `code` or `github_url`"}
 
-        # -------------------------------------------------
-        # 2. Load code (GitHub OR raw code)
-        # -------------------------------------------------
+       
         if input.github_url:
             raw_code = load_github_repo(input.github_url)
         else:
@@ -68,28 +56,19 @@ def generate_docs(input: CodeInput):
         if not raw_code or not raw_code.strip():
             return {"error": "No valid source code found"}
 
-        # -------------------------------------------------
-        # 3. Compress code using ScaleDown
-        # -------------------------------------------------
+       
         compressed_code = compress_code(raw_code)
 
-        # -------------------------------------------------
-        # 4. Generate documentation using agents
-        # -------------------------------------------------
         api_docs = generate_api_docs(compressed_code)
         tutorial = generate_tutorial(compressed_code)
 
-        # 🔹 NEW: Extract repository name for README
         repo_name = "Project"
         if input.github_url:
             repo_name = input.github_url.rstrip("/").split("/")[-1]
 
-        # 🔹 NEW: Generate README
         readme = generate_readme(compressed_code, repo_name)
 
-        # -------------------------------------------------
-        # 5. Save files in versioned folder
-        # -------------------------------------------------
+       
         docs_path = f"docs/{input.version}"
         os.makedirs(docs_path, exist_ok=True)
 
@@ -102,9 +81,7 @@ def generate_docs(input: CodeInput):
         with open(f"{docs_path}/tutorial.md", "w", encoding="utf-8") as f:
             f.write(tutorial)
 
-        # -------------------------------------------------
-        # 6. Return success response
-        # -------------------------------------------------
+        
             return {
                 "status": "success",
                 "version": input.version,
@@ -125,10 +102,7 @@ def generate_docs(input: CodeInput):
 
 
 
-# -----------------------------
 # Compare Versions
-# -----------------------------
-
 @app.post("/compare")
 def compare_versions(old_version: str, new_version: str):
     try:
